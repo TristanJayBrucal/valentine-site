@@ -23,7 +23,8 @@ html,
 body {
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -33,14 +34,22 @@ body {
 /* Main page container */
 .page {
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   background: linear-gradient(135deg, #ffd1dc 0%, #ffb3d4 50%, #ff9ec4 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.page::-webkit-scrollbar {
+  display: none;
 }
 
 /* Background floating hearts */
@@ -90,6 +99,7 @@ body {
   position: relative;
   width: 100%;
   max-width: 500px;
+  max-height: min(100%, 820px);
   background: var(--card-bg);
   backdrop-filter: blur(10px);
   border-radius: clamp(1.5rem, 4vw, 2rem);
@@ -97,9 +107,15 @@ body {
   box-shadow: var(--shadow-main);
   z-index: 1;
   overflow: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
   display: flex;
   flex-direction: column;
   gap: clamp(1rem, 3vw, 1.5rem);
+}
+
+.card::-webkit-scrollbar {
+  display: none;
 }
 
 /* Shine effect */
@@ -264,17 +280,17 @@ body {
   color: white;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%) translateX(clamp(-40px, -10vw, -60px));
+  transform: translate(-50%, -50%) translateX(var(--yes-offset, -52px));
   box-shadow: 0 4px 16px rgba(255, 59, 122, 0.4);
 }
 
 .btn-yes:hover {
-  transform: translate(-50%, -50%) translateX(clamp(-40px, -10vw, -60px)) scale(1.05);
+  transform: translate(-50%, -50%) translateX(var(--yes-offset, -52px)) scale(1.05);
   box-shadow: 0 6px 24px rgba(255, 59, 122, 0.5);
 }
 
 .btn-yes:active {
-  transform: translate(-50%, -50%) translateX(clamp(-40px, -10vw, -60px)) scale(0.98);
+  transform: translate(-50%, -50%) translateX(var(--yes-offset, -52px)) scale(0.98);
 }
 
 .btn-no {
@@ -282,7 +298,7 @@ body {
   color: var(--dark-text);
   right: 50%;
   top: 50%;
-  transform: translate(50%, -50%) translateX(clamp(40px, 10vw, 60px));
+  transform: translate(50%, -50%) translateX(var(--no-offset, 52px));
   border: 2px solid #e0e0e0;
   transition: all 0.15s ease;
 }
@@ -410,6 +426,10 @@ body {
 
 /* Small mobile devices */
 @media (max-width: 374px) {
+  .page {
+    padding: 0.75rem;
+  }
+
   .card {
     padding: 1.25rem;
     gap: 0.875rem;
@@ -424,20 +444,9 @@ body {
     font-size: 0.8125rem;
   }
 
-  .btn-yes {
-    transform: translate(-50%, -50%) translateX(-35px);
-  }
-
-  .btn-yes:hover {
-    transform: translate(-50%, -50%) translateX(-35px) scale(1.05);
-  }
-
-  .btn-yes:active {
-    transform: translate(-50%, -50%) translateX(-35px) scale(0.98);
-  }
-
-  .btn-no {
-    transform: translate(50%, -50%) translateX(35px);
+  .play-area {
+    --yes-offset: -32px;
+    --no-offset: 32px;
   }
 }
 
@@ -481,20 +490,17 @@ body {
     max-width: 500px;
   }
 
-  .btn-yes {
-    transform: translate(-50%, -50%) translateX(-60px);
+  .play-area {
+    --yes-offset: -60px;
+    --no-offset: 60px;
   }
+}
 
-  .btn-yes:hover {
-    transform: translate(-50%, -50%) translateX(-60px) scale(1.05);
-  }
-
-  .btn-yes:active {
-    transform: translate(-50%, -50%) translateX(-60px) scale(0.98);
-  }
-
-  .btn-no {
-    transform: translate(50%, -50%) translateX(60px);
+@media (max-width: 460px) {
+  .play-area {
+    --yes-offset: -36px;
+    --no-offset: 36px;
+    height: 110px;
   }
 }
 

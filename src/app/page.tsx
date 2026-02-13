@@ -24,6 +24,11 @@ type BgHeart = {
   rot: number;
 };
 
+type HeartStyle = React.CSSProperties & {
+  "--dx": string;
+  "--rot": string;
+};
+
 function rand(min: number, max: number) {
   return Math.random() * (max - min) + min;
 }
@@ -32,7 +37,7 @@ export default function Page() {
   const heartChars = useMemo(() => ["💗", "💖", "💘", "💝", "💕", "❤️"], []);
 
   const [overlayOpen, setOverlayOpen] = useState(false);
-  const [status, setStatus] = useState("Choose wisely… (the "No" button is shy)");
+  const [status, setStatus] = useState('Choose wisely… (the "No" button is shy)');
   const [noMoves, setNoMoves] = useState(0);
 
   // ✅ Hydration-safe background hearts
@@ -284,9 +289,9 @@ export default function Page() {
                   left: `${h.left}vw`,
                   animationDuration: `${h.duration}s`,
                   animationDelay: `${h.delay}s`,
-                  ["--dx" as any]: `${h.dx}px`,
-                  ["--rot" as any]: `${h.rot}deg`,
-                } as React.CSSProperties
+                  "--dx": `${h.dx}px`,
+                  "--rot": `${h.rot}deg`,
+                } as HeartStyle
               }
             >
               {h.char}
@@ -398,7 +403,7 @@ export default function Page() {
           />
         </div>
 
-        <div className="hint">Tip: try to click "No"… if you can. 😏</div>
+        <div className="hint">Tip: try to click &quot;No&quot;… if you can. 😏</div>
       </section>
 
       <div
@@ -412,7 +417,7 @@ export default function Page() {
       >
         <div className="modal">
           <h2>YAYYYY! 💞</h2>
-          <p>You just made my whole day. Officially locked in: we're each other's Valentine. 🥰</p>
+          <p>You just made my whole day. Officially locked in: we&apos;re each other&apos;s Valentine. 🥰</p>
           <button className="btn close" type="button" onClick={() => setOverlayOpen(false)}>
             Awww okay 😳
           </button>
