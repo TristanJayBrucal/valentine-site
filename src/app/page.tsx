@@ -32,12 +32,15 @@ export default function Page() {
   const heartChars = useMemo(() => ["💗", "💖", "💘", "💝", "💕", "❤️"], []);
 
   const [overlayOpen, setOverlayOpen] = useState(false);
-  const [status, setStatus] = useState("Choose wisely… (the “No” button is shy)");
+  const [status, setStatus] = useState("Choose wisely… (the "No" button is shy)");
   const [noMoves, setNoMoves] = useState(0);
 
   // ✅ Hydration-safe background hearts
   const [mounted, setMounted] = useState(false);
   const [bgHearts, setBgHearts] = useState<BgHeart[]>([]);
+
+  // Responsive: detect screen size
+  const [isMobile, setIsMobile] = useState(false);
 
   const playAreaRef = useRef<HTMLDivElement | null>(null);
   const noBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -49,6 +52,16 @@ export default function Page() {
   const rafRef = useRef<number | null>(null);
 
   const noDodgeLevel = Math.min(6, 1 + Math.floor(noMoves / 2));
+
+  // ✅ Detect mobile on mount
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // ✅ Generate bg hearts only AFTER mount so SSR/CSR won't mismatch
   useEffect(() => {
@@ -107,7 +120,8 @@ export default function Page() {
     const rect = playArea.getBoundingClientRect();
     const btnRect = noBtn.getBoundingClientRect();
 
-    const padding = 14;
+    // Responsive padding based on screen size
+    const padding = isMobile ? 10 : 14;
     const maxX = rect.width - btnRect.width - padding;
     const maxY = rect.height - btnRect.height - padding;
 
@@ -116,7 +130,10 @@ export default function Page() {
 
     let best: { cx: number; cy: number; score: number } | null = null;
 
-    for (let i = 0; i < 12; i++) {
+    // More attempts on larger screens for smoother movement
+    const attempts = isMobile ? 8 : 12;
+
+    for (let i = 0; i < attempts; i++) {
       const cx = rand(padding, Math.max(padding, maxX));
       const cy = rand(padding, Math.max(padding, maxY));
       const dx = cx - px;
@@ -141,11 +158,10 @@ export default function Page() {
       "Too slow 😝",
       "Try again 😳",
       "That was close 😅",
-      "I’m slippery 😈",
+      "I'm slippery 😈",
       "Okay… just press YES already 💖",
     ];
 
-    // compute based on next moves count
     const nextMoves = noMoves + 1;
     const nextLevel = Math.min(6, 1 + Math.floor(nextMoves / 2));
     setStatus(lines[Math.min(lines.length - 1, nextLevel - 1)]);
@@ -161,7 +177,10 @@ export default function Page() {
     const w = window.innerWidth;
     const h = window.innerHeight;
 
-    confettiPiecesRef.current = Array.from({ length: 180 }, () => ({
+    // Adjust confetti count based on screen size for performance
+    const confettiCount = isMobile ? 120 : 180;
+
+    confettiPiecesRef.current = Array.from({ length: confettiCount }, () => ({
       x: rand(0, w),
       y: rand(-h, 0),
       vx: rand(-2.2, 2.2),
@@ -219,7 +238,10 @@ export default function Page() {
   }
 
   function popHearts(x: number, y: number, count = 18) {
-    for (let i = 0; i < count; i++) {
+    // Reduce heart count on mobile for performance
+    const heartCount = isMobile ? 12 : count;
+
+    for (let i = 0; i < heartCount; i++) {
       const el = document.createElement("div");
       el.className = "heart-pop";
       el.textContent = heartChars[Math.floor(Math.random() * heartChars.length)];
@@ -327,7 +349,7 @@ export default function Page() {
             type="button"
             onPointerDown={(e) => moveNoButtonAwayFrom(e.clientX, e.clientY)}
             onClick={() => {
-              setStatus("Wait… that’s illegal 😭 (try YES)");
+              setStatus("Wait… that's illegal 😭 (try YES)");
               moveNoButtonAwayFrom(window.innerWidth / 2, window.innerHeight / 2);
             }}
             onFocus={() => {
@@ -347,9 +369,25 @@ export default function Page() {
               const btnRect = noBtn.getBoundingClientRect();
               const distX = Math.abs(e.clientX - (btnRect.left + btnRect.width / 2));
               const distY = Math.abs(e.clientY - (btnRect.top + btnRect.height / 2));
-              const dangerRadius = 90 - noDodgeLevel * 6;
+              // Responsive danger radius
+              const baseDanger = isMobile ? 70 : 90;
+              const dangerRadius = baseDanger - noDodgeLevel * 6;
               if (distX < dangerRadius && distY < dangerRadius) {
                 moveNoButtonAwayFrom(e.clientX, e.clientY);
+              }
+            }}
+            onTouchMove={(e) => {
+              const t = e.touches[0];
+              if (!t) return;
+              const noBtn = noBtnRef.current;
+              if (!noBtn) return;
+              const btnRect = noBtn.getBoundingClientRect();
+              const distX = Math.abs(t.clientX - (btnRect.left + btnRect.width / 2));
+              const distY = Math.abs(t.clientY - (btnRect.top + btnRect.height / 2));
+              const baseDanger = isMobile ? 70 : 90;
+              const dangerRadius = baseDanger - noDodgeLevel * 6;
+              if (distX < dangerRadius && distY < dangerRadius) {
+                moveNoButtonAwayFrom(t.clientX, t.clientY);
               }
             }}
             onTouchStart={(e) => {
@@ -360,7 +398,7 @@ export default function Page() {
           />
         </div>
 
-        <div className="hint">Tip: try to click “No”… if you can. 😏</div>
+        <div className="hint">Tip: try to click "No"… if you can. 😏</div>
       </section>
 
       <div
@@ -374,7 +412,7 @@ export default function Page() {
       >
         <div className="modal">
           <h2>YAYYYY! 💞</h2>
-          <p>You just made my whole day. Officially locked in: we’re each other’s Valentine. 🥰</p>
+          <p>You just made my whole day. Officially locked in: we're each other's Valentine. 🥰</p>
           <button className="btn close" type="button" onClick={() => setOverlayOpen(false)}>
             Awww okay 😳
           </button>
